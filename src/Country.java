@@ -55,19 +55,20 @@ public class Country {
     public void transferInfection(Country c, int amount){
         if (Math.random()<Main.v.transportationChances[0]) {
             infect(c, (amount), 0);
+            return;
         }
         if (Math.random()<Main.v.transportationChances[1]) {
             if (transportNodes.size() > 0 && c.transportNodes.size() > 0) {
-                ArrayList<Airport> airportsFrom = transportNodes.stream().filter((t)->t instanceof Airport).map((o)->(Airport) o).collect(Collectors.toCollection(ArrayList::new));
-                ArrayList<Airport> airportsTo = c.transportNodes.stream().filter((t)->t instanceof Airport).map((o)->(Airport) o).collect(Collectors.toCollection(ArrayList::new));
-                if (airportsFrom.size()>0&&airportsTo.size()>0) {
+                ArrayList<Airport> airportsFrom = transportNodes.stream().filter((t) -> t instanceof Airport).map((o) -> (Airport) o).collect(Collectors.toCollection(ArrayList::new));
+                ArrayList<Airport> airportsTo = c.transportNodes.stream().filter((t) -> t instanceof Airport).map((o) -> (Airport) o).collect(Collectors.toCollection(ArrayList::new));
+                if (airportsFrom.size() > 0 && airportsTo.size() > 0) {
                     Airport nodeFrom = airportsFrom.get(new Random().nextInt(airportsFrom.size()));
                     Airport nodeTo = airportsTo.get(new Random().nextInt(airportsTo.size()));
                     nodeFrom.launchTransport(nodeTo);
                 }
-            } else {
-                infect(c, amount * 2 / 3, 0);
             }
+            return;
+        }
         if (Math.random()<Main.v.transportationChances[2]){
                 if (transportNodes.size() > 0 && c.transportNodes.size() > 0) {
                     ArrayList<Port> portsFrom = transportNodes.stream().filter((t)->t instanceof Port).map((o)->(Port) o).collect(Collectors.toCollection(ArrayList::new));
@@ -77,15 +78,13 @@ public class Country {
                         Port nodeTo = portsTo.get(new Random().nextInt(portsTo.size()));
                         nodeFrom.launchTransport(nodeTo);
                     }
-                } else {
-                    infect(c, amount / 3, 0);
                 }
-            }
+                return;
         }
     }
     public void infect(Country c, int amount, int way){
         amount = (int) (amount
-                *(((5-c.countryGrade)/2)
+                *(((5.0-c.countryGrade)/2d)
                 *Main.v.climateInfectability[c.climate])*
                 Main.v.transportWayInfectability[way]);
         int safeAmount = Math.min(Math.min(amount, c.population-c.infected), infected);
@@ -108,6 +107,7 @@ public class Country {
             transferInfection(this, (int) (Main.v.innerInfectabilityRate * infected));
             dead = (int) Math.max(0,Math.min(dead + factor*Main.v.mortality * infected, population));
             infected = (int) Math.min(population,Math.max(infected * (1 - factor*Main.v.mortality), 0));
+
             bg = new Color((1 - 1f * dead / population), (1 - 1f * infected / population), (1 - 1f * infected / population));
 
             if (Math.random()<0.25) {

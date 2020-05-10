@@ -181,7 +181,7 @@ public class Main extends JPanel implements MouseListener {
                 new Port(907,628)));
 
 
-        for (Country c:countries.stream().filter((c)->c.transportNodes.size()>0).collect(Collectors.toCollection(ArrayList::new))) {
+        for (Country c:countries.stream().filter((c)->c.transportNodes.size()>0).collect(Collectors.toList())) {
             for (Port p : c.transportNodes.stream().filter((t) -> t instanceof Port).map((o) -> (Port) o).collect(Collectors.toCollection(ArrayList::new))) {
                 for (Country otherCountry:countries.stream().filter((otherCountry)->otherCountry.transportNodes.size()>0).collect(Collectors.toCollection(ArrayList::new))){
                         for (Port otherPort : otherCountry.transportNodes.stream().filter((otherPort) -> otherPort instanceof Port).map((o) -> (Port) o).collect(Collectors.toCollection(ArrayList::new))) {

@@ -1,7 +1,10 @@
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Port extends TransportNode{
     ArrayList<Voyage> ownVoyages = new ArrayList<>();
@@ -53,7 +56,11 @@ public class Port extends TransportNode{
                     {j, i - 1},
                     {j, i + 1},
                     {j - 1, i},
-                    {j + 1, i}
+                    {j + 1, i},
+                    {j - 1, i - 1},
+                    {j + 1, i -1},
+                    {j - 1, i + 1},
+                    {j + 1, i + 1},
             }) {
                 if (arr[1]==-1){
                     arr[1]=Main.HEIGHT-1;
@@ -94,6 +101,17 @@ public class Port extends TransportNode{
         return result;
     }
     class Voyage{
+        Image img;
+
+        {
+            try {
+                img = ImageIO.read(new File("src/ship.png"));
+                img = img.getScaledInstance(6,26,0);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         int speed;
         Port from;
         Port to;
@@ -111,7 +129,7 @@ public class Port extends TransportNode{
                 path = new ArrayList<>();
                 delay = path.size();
             }
-            speed = 1+new Random().nextInt(5);
+            speed = 2+new Random().nextInt(4);
         }
         public void show(Graphics2D g2d) {
             if (time>=delay){
@@ -124,8 +142,16 @@ public class Port extends TransportNode{
                     g2d.setColor(new Color(255,255,0,80));
                     g2d.fillRect(path.get(i)[0]-1, path.get(i)[1]-1, 2, 2);
                 }
-                g2d.setColor(Color.yellow);
-                g2d.fillOval(path.get(time)[0]-5,path.get(time)[1]-5,10,10);
+                AffineTransform tr = g2d.getTransform();
+                tr.translate(path.get(time)[0], path.get(time)[1]);
+                if (time+1<path.size()) {
+                    tr.rotate(3*Math.PI/2+Math.atan2(path.get(time+1)[1]-path.get(time)[1],path.get(time+1)[0]-path.get(time)[0]));
+                }
+                tr.translate(-3, -13);
+                g2d.drawImage(img, tr, null);
+                tr.translate(-path.get(time)[0] + 3, -path.get(time)[1] + 13);
+//                g2d.setColor(Color.yellow);
+//                g2d.fillOval(path.get(time)[0]-5,path.get(time)[1]-5,10,10);
             }
             time+=speed;
         }
