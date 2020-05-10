@@ -9,7 +9,6 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class Main extends JPanel implements MouseListener {
@@ -57,7 +56,7 @@ public class Main extends JPanel implements MouseListener {
                     if (s.length>0) {
                         Mutation tmp = (Mutation) s[(int) (Math.random() * s.length)];
                         tmp.apply();
-                        JOptionPane.showMessageDialog(GUI.mutationsPanel, tmp.desc, "NEW MUTATION", JOptionPane.INFORMATION_MESSAGE);
+                        //JOptionPane.showMessageDialog(GUI.mutationsPanel, tmp.desc, "NEW MUTATION", JOptionPane.INFORMATION_MESSAGE);
 
                     }
                     v.lifeTime = 0;
@@ -115,7 +114,7 @@ public class Main extends JPanel implements MouseListener {
         countries.add(new Country(934, 157, "Russia", 1500000, 3,
                 new Airport(914, 167),
                 new Airport(1224,188),
-                new Port(914,121)));
+                new Port(916,115)));
         countries.add(new Country(905, 205, "Ukraine", 400000, 3,
                 new Airport(896, 205)));
         countries.add(new Country(853, 194, "Poland", 380000, 3));
@@ -131,7 +130,7 @@ public class Main extends JPanel implements MouseListener {
             add(new int[]{270, 133});
         }}, "USA", 3280000, 4,
                 new Airport(450, 250),
-                new Port(432,320)));
+                new Port(432,310)));
 
         countries.add(new Country(384, 165, "Canada", 380000, 4,
                 new Airport(400, 160)));
@@ -161,7 +160,7 @@ public class Main extends JPanel implements MouseListener {
         countries.add(new Country(798, 202, "Belgium", 114600, 4));
         countries.add(new Country(551, 512, "Brazil", 2090000, 3,
                 new Airport(502,490),
-                new Port(615,483)));
+                new Port(615,480)));
         countries.add(new Country(445, 516, "Peru", 320000, 2));
         countries.add(new Country(477, 587, "Chile", 187300, 2));
         countries.add(new Country(450, 442, "Colombia", 496500, 1));
@@ -178,36 +177,57 @@ public class Main extends JPanel implements MouseListener {
         countries.add(new Country(913,316, "Africa",12160000,0,
                 new Airport(882,433),
                 new Airport(886,617),
-                new Port(709,359),
+                new Port(704,359),
                 new Port(907,628)));
 
-        for (Country c:countries) {
+
+        for (Country c:countries.stream().filter((c)->c.transportNodes.size()>0).collect(Collectors.toCollection(ArrayList::new))) {
             for (Port p : c.transportNodes.stream().filter((t) -> t instanceof Port).map((o) -> (Port) o).collect(Collectors.toCollection(ArrayList::new))) {
-                for (Country otherCountry:Main.countries){
-                    if (c!=otherCountry) {
-                        for (Port otherPort : otherCountry.transportNodes.stream().filter((t) -> t instanceof Port).map((o) -> (Port) o).collect(Collectors.toCollection(ArrayList::new))) {
-                            AtomicBoolean done = new AtomicBoolean(false);
-                            Thread t = new Thread(()->{
-                                    p.region = p.expandRegionForVoyagePath(p.x, p.y, otherPort.x, otherPort.y, new Color(28, 71, 99));
-                                    ArrayList<int[]> path = p.findPath(otherPort.x, otherPort.y);
-                                    Collections.reverse(path);
-                                    p.paths.put(otherPort, path);
-                                    done.set(true);
-                            });
-                            t.start();
-                            if (done.get()){
-                                System.out.println(p.paths.size());
-                                t.interrupt();
-                                try {
-                                    t.join();
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
+                for (Country otherCountry:countries.stream().filter((otherCountry)->otherCountry.transportNodes.size()>0).collect(Collectors.toCollection(ArrayList::new))){
+                        for (Port otherPort : otherCountry.transportNodes.stream().filter((otherPort) -> otherPort instanceof Port).map((o) -> (Port) o).collect(Collectors.toCollection(ArrayList::new))) {
+                                if (!p.equals(otherPort)) {
+                                    File pathTxt = new File("src/paths/" + c.name + "_" + c.transportNodes.indexOf(p) +
+                                                "_" + otherCountry.name + "_" + otherCountry.transportNodes.indexOf(otherPort) + ".txt");
+                                    if (pathTxt.exists()){
+                                        try {
+                                            FileReader fr = new FileReader(pathTxt);
+                                            BufferedReader br = new BufferedReader(fr);
+                                            ArrayList<int[]> path = new ArrayList<>();
+                                            for (String s: br.lines().collect(Collectors.toCollection(ArrayList::new))){
+                                                int[] coords = new int[]{Integer.parseInt(s.split("-")[0]),
+                                                                         Integer.parseInt(s.split("-")[1])};
+                                                path.add(coords);
+                                                p.paths.put(otherPort,path);
+                                            }
+                                        } catch (FileNotFoundException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }else{
+                                        p.region = p.expandRegionForVoyagePath(p.x, p.y, otherPort.x, otherPort.y, new Color(28, 71, 99));
+                                        ArrayList<int[]> path = p.findPath(otherPort.x, otherPort.y);
+                                        Collections.reverse(path);
+                                        p.paths.put(otherPort, path);
+                                        try {
+                                            pathTxt.createNewFile();
+                                            FileWriter fw = new FileWriter(pathTxt);
+                                            BufferedWriter bw = new BufferedWriter(fw);
+                                            path.forEach((arr) -> {
+                                                try {
+                                                    bw.append(arr[0] + "-" + arr[1]);
+                                                    bw.newLine();
+                                                } catch (IOException e) {
+                                                    e.printStackTrace();
+                                                }
+                                            });
+                                            bw.close();
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
                                 }
-                            }
                         }
                     }
                 }
-            }
         }
     }
 

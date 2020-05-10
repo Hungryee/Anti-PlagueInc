@@ -24,7 +24,7 @@ public class Virus {
 
          transportWayInfectability = new double[]{1,1,1};
          climateInfectability = new double[]{1,1,1};
-         transportationChances = new double[]{0.5,0.5,0.75};
+         transportationChances = new double[]{0.5,0.5,0.55};
 
         //initial infection
          Main.countries.get((int) (Math.random()*Main.countries.size())).infected = 50;
@@ -159,7 +159,7 @@ public class Virus {
                 super.apply();
                 Main.v.transportationChances[0] -= 0.03;
                 Main.v.transportationChances[1] -= 0.03;
-                Main.v.transportationChances[2] -= 0.03;
+                Main.v.transportationChances[2] -= 0.02;
             }
         };
         Mutation increaseMaxPopupValue2 = new Mutation("Increase amount of OmegaCoins in bonuses", 3, 31, true, investigationBegin,increaseMaxPopupValue){
@@ -180,7 +180,7 @@ public class Virus {
             @Override
             public void apply() {
                 super.apply();
-                Main.v.transportationChances[2] -= 0.03;
+                Main.v.transportationChances[2] -= 0.06;
             }
         };
         Mutation encourageInnerQuarantine = new Mutation("Encourage self-quarantine", 4, 29, true,reduceTransportRate){
