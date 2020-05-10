@@ -55,7 +55,19 @@ public class Port extends TransportNode{
                     {j - 1, i},
                     {j + 1, i}
             }) {
-                if (arr[1] >= 0 && arr[1] < Main.HEIGHT && arr[0] >= 0 && arr[0] < Main.WIDTH && copy.getRGB(arr[0],arr[1]) == bg.getRGB()) {
+                if (arr[1]==-1){
+                    arr[1]=Main.HEIGHT-1;
+                }
+                if (arr[1]==Main.HEIGHT){
+                    arr[1]=0;
+                }
+                if (arr[0]==-1){
+                    arr[0]=Main.WIDTH-1;
+                }
+                if (arr[0]==Main.WIDTH){
+                    arr[0]=0;
+                }
+                if (arr[1] >= 0 && arr[1] <= Main.HEIGHT && arr[0] >= 0 && arr[0] <= Main.WIDTH && copy.getRGB(arr[0],arr[1]) == bg.getRGB()) {
                     copy.setRGB(arr[0],arr[1], Color.blue.getRGB());
                     queue.add(arr);
                     result.add(new int[][]{arr,current});

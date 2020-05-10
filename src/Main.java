@@ -28,7 +28,6 @@ public class Main extends JPanel implements MouseListener {
         WINDY,
         STORM
     }
-    public WEATHER weather = WEATHER.NORMAL;
     public Main() {
         mapImage = new BufferedImage(WIDTH,HEIGHT, BufferedImage.TYPE_INT_ARGB);
         upgrades = new HashMap<>();
@@ -134,7 +133,8 @@ public class Main extends JPanel implements MouseListener {
 
         countries.add(new Country(384, 165, "Canada", 380000, 4,
                 new Airport(400, 160)));
-        countries.add(new Country(316, 319, "Mexico", 1260000, 3));
+        countries.add(new Country(316, 319, "Mexico", 1260000, 3,
+                new Port(318,368)));
         countries.add(new Country(746, 260, "Portugal", 102000, 3));
         countries.add(new Country(813, 220, "Switzerland", 85000, 4));
         countries.add(new Country(841, 205, "Czech Republic", 106500, 3));
@@ -303,8 +303,8 @@ public class Main extends JPanel implements MouseListener {
 
     @Override
     public void mousePressed(MouseEvent e) {
-//        System.out.println(e.getX());
-//        System.out.println(e.getY());
+        System.out.println(e.getX());
+        System.out.println(e.getY());
         if (!Main.v.isAutoPickupEnabled) {
             Country:
             for (Country c : countries) {
