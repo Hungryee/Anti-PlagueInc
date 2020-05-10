@@ -56,7 +56,7 @@ public class Main extends JPanel implements MouseListener {
                     if (s.length>0) {
                         Mutation tmp = (Mutation) s[(int) (Math.random() * s.length)];
                         tmp.apply();
-                        //JOptionPane.showMessageDialog(GUI.mutationsPanel, tmp.desc, "NEW MUTATION", JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(GUI.mutationsPanel, tmp.desc, "NEW MUTATION", JOptionPane.INFORMATION_MESSAGE);
 
                     }
                     v.lifeTime = 0;
