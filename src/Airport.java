@@ -1,4 +1,8 @@
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class Airport extends TransportNode {
@@ -22,6 +26,17 @@ public class Airport extends TransportNode {
 
 
     class Flight{
+        Image img;
+
+        {
+            try {
+                img = ImageIO.read(new File("src/plane.png"));
+                img = img.getScaledInstance(20,20,0);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         int x;
         int y;
         int dx;
@@ -29,7 +44,7 @@ public class Airport extends TransportNode {
         Airport from;
         Airport to;
         float time = 0;
-        float delay = 4;
+        float delay = 10;
         Flight(Airport from, Airport to){
             this.from = from;
             this.to = to;
@@ -45,9 +60,14 @@ public class Airport extends TransportNode {
                 ownFlights.remove(this);
             }
             g2d.setColor(Color.green);
-            g2d.setStroke(new BasicStroke((delay-time)));
+            g2d.setStroke(new BasicStroke((delay-time)/2));
             g2d.drawLine(from.x,from.y, (int) (from.x+time*dx/delay), (int) (from.y+time*dy/delay));
-
+            AffineTransform tr = g2d.getTransform();
+            tr.translate(from.x+time*dx/delay, from.y+time*dy/delay);
+            tr.rotate(Math.PI/2+Math.atan2(to.y-from.y, to.x-from.x));
+            tr.translate(-20 / 2d, -20 / 2d);
+            g2d.drawImage(img, tr, null);
+            tr.translate(-from.x+time*dx/delay + 20 / 2d, -from.y+time*dy/delay + 20 / 2d);
             time+=0.25;
         }
     }

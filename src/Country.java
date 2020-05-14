@@ -1,8 +1,6 @@
 
 
 import java.awt.*;
-import java.awt.image.Raster;
-import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
@@ -33,9 +31,9 @@ public class Country {
         transportNodes.addAll(Arrays.asList(nodes));
         land = Main.expandRegion(x, y, Color.lightGray);
 
-        if (y < Main.HEIGHT / 6 || y > Main.HEIGHT * 5 / 6) {
+        if (y < MainFrame.HEIGHT / 6 || y > MainFrame.HEIGHT * 5 / 6) {
             climate = 0;
-        } else if (y < Main.HEIGHT / 3 || y > Main.HEIGHT * 2 / 3) {
+        } else if (y < MainFrame.HEIGHT / 3 || y > MainFrame.HEIGHT * 2 / 3) {
             climate = 1;
         }else{
             climate = 2;
@@ -53,66 +51,71 @@ public class Country {
         }
     }
     public void transferInfection(Country c, int amount){
-        if (Math.random()<Main.v.transportationChances[0]) {
-            infect(c, (amount), 0);
-            return;
-        }
-        if (Math.random()<Main.v.transportationChances[1]) {
-            if (transportNodes.size() > 0 && c.transportNodes.size() > 0) {
-                ArrayList<Airport> airportsFrom = transportNodes.stream().filter((t) -> t instanceof Airport).map((o) -> (Airport) o).collect(Collectors.toCollection(ArrayList::new));
-                ArrayList<Airport> airportsTo = c.transportNodes.stream().filter((t) -> t instanceof Airport).map((o) -> (Airport) o).collect(Collectors.toCollection(ArrayList::new));
-                if (airportsFrom.size() > 0 && airportsTo.size() > 0) {
-                    Airport nodeFrom = airportsFrom.get(new Random().nextInt(airportsFrom.size()));
-                    Airport nodeTo = airportsTo.get(new Random().nextInt(airportsTo.size()));
-                    nodeFrom.launchTransport(nodeTo);
-                }
+        if (c!=this) {
+            if (Math.random() < Main.v.transportationChances[0]) {
+                infect(c, (amount), 0);
+                return;
             }
-            return;
-        }
-        if (Math.random()<Main.v.transportationChances[2]){
+            if (Math.random() < Main.v.transportationChances[1]) {
                 if (transportNodes.size() > 0 && c.transportNodes.size() > 0) {
-                    ArrayList<Port> portsFrom = transportNodes.stream().filter((t)->t instanceof Port).map((o)->(Port) o).collect(Collectors.toCollection(ArrayList::new));
-                    ArrayList<Port> portsTo = c.transportNodes.stream().filter((t)->t instanceof Port).map((o)->(Port) o).collect(Collectors.toCollection(ArrayList::new));
-                    if (portsFrom.size()>0&&portsTo.size()>0) {
+                    ArrayList<Airport> airportsFrom = transportNodes.stream().filter((t) -> t instanceof Airport).map((o) -> (Airport) o).collect(Collectors.toCollection(ArrayList::new));
+                    ArrayList<Airport> airportsTo = c.transportNodes.stream().filter((t) -> t instanceof Airport).map((o) -> (Airport) o).collect(Collectors.toCollection(ArrayList::new));
+                    if (airportsFrom.size() > 0 && airportsTo.size() > 0) {
+                        Airport nodeFrom = airportsFrom.get(new Random().nextInt(airportsFrom.size()));
+                        Airport nodeTo = airportsTo.get(new Random().nextInt(airportsTo.size()));
+                        nodeFrom.launchTransport(nodeTo);
+                    }
+                }
+                return;
+            }
+            if (Math.random() < Main.v.transportationChances[2]) {
+                if (transportNodes.size() > 0 && c.transportNodes.size() > 0) {
+                    ArrayList<Port> portsFrom = transportNodes.stream().filter((t) -> t instanceof Port).map((o) -> (Port) o).collect(Collectors.toCollection(ArrayList::new));
+                    ArrayList<Port> portsTo = c.transportNodes.stream().filter((t) -> t instanceof Port).map((o) -> (Port) o).collect(Collectors.toCollection(ArrayList::new));
+                    if (portsFrom.size() > 0 && portsTo.size() > 0) {
                         Port nodeFrom = portsFrom.get(new Random().nextInt(portsFrom.size()));
                         Port nodeTo = portsTo.get(new Random().nextInt(portsTo.size()));
                         nodeFrom.launchTransport(nodeTo);
                     }
                 }
                 return;
+            }
         }
     }
     public void infect(Country c, int amount, int way){
-        amount = (int) (amount
-                *(((5.0-c.countryGrade)/2d)
-                *Main.v.climateInfectability[c.climate])*
-                Main.v.transportWayInfectability[way]);
+        amount = (int) ((amount
+                *((6d-c.countryGrade)/2d)
+                *Main.v.climateInfectability[c.climate]*
+                Main.v.transportWayInfectability[way]));
         int safeAmount = Math.min(Math.min(amount, c.population-c.infected), infected);
         c.infected += safeAmount;
-        Main.totalInfected+=safeAmount;
-        c.repaint();
         if (c!=this) {
-            infected -= safeAmount;
+            infected -= safeAmount/2;
         }
+        c.repaint();
     }
     public void update(){
         lifetime++;
         if (lifetime>5) {
             Country tmp = Main.countries.get(new Random().nextInt(Main.countries.size()));
-            if (tmp!=this) {
                 transferInfection(tmp, 300 + new Random().nextInt(450));
-            }
 
-            double factor = new Random().nextDouble()*(5-countryGrade)/2;
-            transferInfection(this, (int) (Main.v.innerInfectabilityRate * infected));
-            dead = (int) Math.max(0,Math.min(dead + factor*Main.v.mortality * infected, population));
-            infected = (int) Math.min(population,Math.max(infected * (1 - factor*Main.v.mortality), 0));
+            double factor = new Random().nextDouble()*(6d-countryGrade)/2d;
+            infected += Main.v.innerInfectabilityRate * infected;
 
-            bg = new Color((1 - 1f * dead / population), (1 - 1f * infected / population), (1 - 1f * infected / population));
+            dead+=factor*Main.v.mortality * infected;
+            infected -= factor*Main.v.mortality*infected;
+
 
             if (Math.random()<0.25) {
-                infected = (int) Math.min(population, Math.max(infected * (1 - factor * Main.v.medicineEffect), 0));
+                infected -= infected*factor * Main.v.medicineEffect;
             }
+
+
+            infected = Math.max(0, Math.min(infected,population));
+            dead = Math.max(0,dead);
+
+            bg = new Color((1 - 1f * dead / population), (1 - 1f * infected / population), (1 - 1f * infected / population));
 
             if (Math.random()<Main.v.popupChance &&bonuses.size()<3){
                 int[] coords = land.get(new Random().nextInt(land.size()));

@@ -159,15 +159,23 @@ class BottomBar extends JMenuBar{
         add(new JButton("Show upgrades"){{
             addActionListener(e->{
                 GUI.mutationsPanel.setVisible(false);
+                Main.graph.setVisible(false);
                 GUI.upgradesPanel.setVisible(!GUI.upgradesPanel.isVisible());
             });
         }});
         add(new JButton("Show mutations"){{
             addActionListener(e->{
                 GUI.upgradesPanel.setVisible(false);
+                Main.graph.setVisible(false);
                 GUI.mutationsPanel.setVisible(!GUI.mutationsPanel.isVisible());
             });
         }});
-
+        add(new JButton("Show graph"){{
+            addActionListener(e->{
+                GUI.upgradesPanel.setVisible(false);
+                GUI.mutationsPanel.setVisible(false);
+                Main.graph.setVisible(!Main.graph.isVisible());
+            });
+        }});
     }
 }

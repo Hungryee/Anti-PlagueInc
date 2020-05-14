@@ -27,7 +27,7 @@ public class Virus {
          transportationChances = new double[]{0.5,0.5,0.5};
 
         //initial infection
-         Main.countries.get((int) (Math.random()*Main.countries.size())).infected = 50;
+         Main.countries.get((int) (Math.random()*Main.countries.size())).infected = 100;
 
 
     }

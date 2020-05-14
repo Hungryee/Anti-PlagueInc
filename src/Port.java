@@ -63,18 +63,18 @@ public class Port extends TransportNode{
                     {j + 1, i + 1},
             }) {
                 if (arr[1]==-1){
-                    arr[1]=Main.HEIGHT-1;
+                    arr[1]= MainFrame.HEIGHT-1;
                 }
-                if (arr[1]==Main.HEIGHT){
+                if (arr[1]== MainFrame.HEIGHT){
                     arr[1]=0;
                 }
                 if (arr[0]==-1){
-                    arr[0]=Main.WIDTH-1;
+                    arr[0]= MainFrame.WIDTH-1;
                 }
-                if (arr[0]==Main.WIDTH){
+                if (arr[0]== MainFrame.WIDTH){
                     arr[0]=0;
                 }
-                if (arr[1] >= 0 && arr[1] <= Main.HEIGHT && arr[0] >= 0 && arr[0] <= Main.WIDTH && copy.getRGB(arr[0],arr[1]) == bg.getRGB()) {
+                if (arr[1] >= 0 && arr[1] <= MainFrame.HEIGHT && arr[0] >= 0 && arr[0] <= MainFrame.WIDTH && copy.getRGB(arr[0],arr[1]) == bg.getRGB()) {
                     copy.setRGB(arr[0],arr[1], Color.blue.getRGB());
                     queue.add(arr);
                     result.add(new int[][]{arr,current});
@@ -125,11 +125,8 @@ public class Port extends TransportNode{
                 path = from.paths.get(to);
                 delay = path.size();
             }
-            else{
-                path = new ArrayList<>();
-                delay = path.size();
-            }
-            speed = 2+new Random().nextInt(4);
+
+            speed = 1+new Random().nextInt(5);
         }
         public void show(Graphics2D g2d) {
             if (time>=delay){

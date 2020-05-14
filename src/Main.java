@@ -13,37 +13,32 @@ import java.util.stream.Collectors;
 
 public class Main extends JPanel implements MouseListener {
 
-    public static final int WIDTH = 1600;
-    public static final int HEIGHT = 800;
-
     public static ArrayList<Country> countries = new ArrayList<>();
-    public static int totalInfected = 50;
+    public static int totalInfected = 0;
     public static Virus v;
     public static HashMap<Integer, List<Mutation>> upgrades;
     public static BufferedImage mapImage;
     public boolean doneInit;
     public static int upgradePts = 0;
-    public enum WEATHER{
-        NORMAL,
-        WINDY,
-        STORM
-    }
+    public static GraphPanel graph;
+
     public Main() {
-        mapImage = new BufferedImage(WIDTH,HEIGHT, BufferedImage.TYPE_INT_ARGB);
+        this.setSize(MainFrame.WIDTH, MainFrame.HEIGHT);
+        mapImage = new BufferedImage(MainFrame.WIDTH, MainFrame.HEIGHT, BufferedImage.TYPE_INT_ARGB);
         upgrades = new HashMap<>();
         initMap();
         initCountries();
         v = new Virus();
-        setPreferredSize(new Dimension(WIDTH,HEIGHT));
+        setPreferredSize(new Dimension(MainFrame.WIDTH, MainFrame.HEIGHT));
         setLayout(new BorderLayout());
         addMouseListener(this);
+        graph = new GraphPanel();
         add(new GUI(), BorderLayout.SOUTH);
-
-
+        add(graph, BorderLayout.EAST);
         doneInit = true;
         Thread paintThread = new Thread(() -> {
             while (!Thread.currentThread().isInterrupted()) {
-                repaint();
+                this.repaint();
                 v.lifeTime++;
                 if (v.lifeTime>=v.mutationDelay){
                     for (int i:v.mutations.keySet()){
@@ -55,7 +50,7 @@ public class Main extends JPanel implements MouseListener {
                     if (s.length>0) {
                         Mutation tmp = (Mutation) s[(int) (Math.random() * s.length)];
                         tmp.apply();
-                        JOptionPane.showMessageDialog(GUI.mutationsPanel, tmp.desc, "NEW MUTATION", JOptionPane.INFORMATION_MESSAGE);
+                        //JOptionPane.showMessageDialog(GUI.mutationsPanel, tmp.desc, "NEW MUTATION", JOptionPane.INFORMATION_MESSAGE);
 
                     }
                     v.lifeTime = 0;
@@ -64,6 +59,9 @@ public class Main extends JPanel implements MouseListener {
                 int totalPop = countries.stream().mapToInt(c -> c.population).sum();
                 GUI.infectedMenuPercent.setText(""+totalInfected/(totalPop+1f)*100+"%");
                 int totalDead = countries.stream().mapToInt(c->c.dead).sum();
+                totalInfected = countries.stream().mapToInt(c->c.infected).sum();
+                Main.graph.infectedGraphPts.add(totalInfected);
+                Main.graph.deadGraphPts.add(totalDead);
                 GUI.deadMenu.setText("Total dead in world: "+totalDead);
                 GUI.deadMenuPercent.setText("Mortality: "+1f*totalDead/(totalDead+totalInfected)*100+"%");
 
@@ -83,7 +81,7 @@ public class Main extends JPanel implements MouseListener {
 //        map = new int[HEIGHT][WIDTH];
         try{
             Image tmp = ImageIO.read(new File("src/world4_test_copy.png"));
-            BufferedImage bg = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
+            BufferedImage bg = new BufferedImage(MainFrame.WIDTH, MainFrame.HEIGHT, BufferedImage.TYPE_INT_RGB);
             Graphics tempG = bg.createGraphics();
             tempG.drawImage(tmp, 0, 0, null);
             tempG.dispose();
@@ -235,7 +233,7 @@ public class Main extends JPanel implements MouseListener {
 //        int[][] mapCopy = new int[map.length][];
 //        System.arraycopy(map,0,mapCopy,0,map.length);
         //
-        BufferedImage copy = mapImage.getSubimage(0,0,WIDTH,HEIGHT);
+        BufferedImage copy = mapImage.getSubimage(0,0, MainFrame.WIDTH, MainFrame.HEIGHT);
         //
         ArrayList<int[]> result = new ArrayList<>();
         int[] first = new int[]{x,y};
@@ -259,7 +257,7 @@ public class Main extends JPanel implements MouseListener {
                         {j - 1, i},
                         {j + 1, i}
                 }) {
-                    if (arr[1] >= 0 && arr[1] < HEIGHT && arr[0] >= 0 && arr[0] < WIDTH && copy.getRGB(arr[0],arr[1]) == bg.getRGB()) {
+                    if (arr[1] >= 0 && arr[1] < MainFrame.HEIGHT && arr[0] >= 0 && arr[0] < MainFrame.WIDTH && copy.getRGB(arr[0],arr[1]) == bg.getRGB()) {
 //                    if (arr[1] >= 0 && arr[1] < HEIGHT && arr[0] >= 0 && arr[0] < WIDTH && mapCopy[arr[1]][arr[0]] == bg.getRGB()) {
                         copy.setRGB(arr[0],arr[1], Color.blue.getRGB());
 //                        mapCopy[arr[1]][arr[0]] = Color.blue.getRGB();
@@ -283,17 +281,6 @@ public class Main extends JPanel implements MouseListener {
                 c.show(g2d);
             }
         }
-    }
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(()->{
-            JFrame f = new JFrame();
-            f.setSize(WIDTH, HEIGHT);
-            f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            f.setPreferredSize(new Dimension(WIDTH,HEIGHT));
-            f.add(new Main());
-            f.setVisible(true);
-        });
-
     }
 
     @Override
