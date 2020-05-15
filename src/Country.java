@@ -51,7 +51,6 @@ public class Country {
         }
     }
     public void transferInfection(Country c, int amount){
-        if (c!=this) {
             if (Math.random() < Main.v.transportationChances[0]) {
                 infect(c, (amount), 0);
                 return;
@@ -78,9 +77,7 @@ public class Country {
                         nodeFrom.launchTransport(nodeTo);
                     }
                 }
-                return;
             }
-        }
     }
     public void infect(Country c, int amount, int way){
         amount = (int) ((amount
@@ -98,7 +95,10 @@ public class Country {
         lifetime++;
         if (lifetime>5) {
             Country tmp = Main.countries.get(new Random().nextInt(Main.countries.size()));
-                transferInfection(tmp, 300 + new Random().nextInt(450));
+            while (tmp==this){
+                tmp = Main.countries.get(new Random().nextInt(Main.countries.size()));
+            }
+            transferInfection(tmp, 300 + new Random().nextInt(450));
 
             double factor = new Random().nextDouble()*(6d-countryGrade)/2d;
             infected += Main.v.innerInfectabilityRate * infected;
@@ -107,17 +107,17 @@ public class Country {
             infected -= factor*Main.v.mortality*infected;
 
 
-            if (Math.random()<0.25) {
-                infected -= infected*factor * Main.v.medicineEffect;
+            if (Math.random()<0.5) {
+                infected -= infected*(4-factor) * Main.v.medicineEffect;
             }
 
 
             infected = Math.max(0, Math.min(infected,population));
-            dead = Math.max(0,dead);
+            dead = Math.max(0,Math.min(dead,population));
 
             bg = new Color((1 - 1f * dead / population), (1 - 1f * infected / population), (1 - 1f * infected / population));
 
-            if (Math.random()<Main.v.popupChance &&bonuses.size()<3){
+            if (Math.random()<Main.v.popupChance && bonuses.size()<3){
                 int[] coords = land.get(new Random().nextInt(land.size()));
                 if (Main.v.isAutoPickupEnabled){
                     new BonusPopup(coords[0], coords[1]).activate();
@@ -125,7 +125,7 @@ public class Country {
                     bonuses.add(new BonusPopup(coords[0], coords[1]));
                 }
             }
-            if (bonuses.size()>0&&Math.random()<0.04){
+            if (bonuses.size()>0&&Math.random()<0.01){
                 bonuses.remove(0);
             }
             lifetime = 0;

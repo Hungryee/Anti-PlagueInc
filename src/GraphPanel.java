@@ -17,7 +17,7 @@ public class GraphPanel extends JPanel {
 
     @Override
     protected void paintComponent(Graphics g) {
-        if (infectedGraphPts.size()>=1000){
+        if (infectedGraphPts.size()>=2000){
             infectedGraphPts.remove(0);
         }
         if (isVisible()) {

@@ -62,22 +62,18 @@ public class Port extends TransportNode{
                     {j - 1, i + 1},
                     {j + 1, i + 1},
             }) {
-                if (arr[1]==-1){
-                    arr[1]= MainFrame.HEIGHT-1;
+                if (arr[0] == -1){
+                    arr[0] = MainFrame.WIDTH-1;
                 }
-                if (arr[1]== MainFrame.HEIGHT){
-                    arr[1]=0;
-                }
-                if (arr[0]==-1){
-                    arr[0]= MainFrame.WIDTH-1;
-                }
-                if (arr[0]== MainFrame.WIDTH){
+                if (arr[0] == MainFrame.WIDTH){
                     arr[0]=0;
                 }
-                if (arr[1] >= 0 && arr[1] <= MainFrame.HEIGHT && arr[0] >= 0 && arr[0] <= MainFrame.WIDTH && copy.getRGB(arr[0],arr[1]) == bg.getRGB()) {
-                    copy.setRGB(arr[0],arr[1], Color.blue.getRGB());
-                    queue.add(arr);
-                    result.add(new int[][]{arr,current});
+                if (arr[1] >= 0 && arr[1] < MainFrame.HEIGHT && arr[0] >= 0 && arr[0] < MainFrame.WIDTH) {
+                    if (copy.getRGB(arr[0], arr[1]) == bg.getRGB()) {
+                        copy.setRGB(arr[0], arr[1], Color.blue.getRGB());
+                        queue.add(arr);
+                        result.add(new int[][]{arr, current});
+                    }
                 }
             }
         }
@@ -121,6 +117,7 @@ public class Port extends TransportNode{
         Voyage(Port from, Port to){
             this.from = from;
             this.to = to;
+            time = 0;
             if (from.paths.containsKey(to)) {
                 path = from.paths.get(to);
                 delay = path.size();
@@ -147,8 +144,6 @@ public class Port extends TransportNode{
                 tr.translate(-3, -13);
                 g2d.drawImage(img, tr, null);
                 tr.translate(-path.get(time)[0] + 3, -path.get(time)[1] + 13);
-//                g2d.setColor(Color.yellow);
-//                g2d.fillOval(path.get(time)[0]-5,path.get(time)[1]-5,10,10);
             }
             time+=speed;
         }

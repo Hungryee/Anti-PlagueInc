@@ -30,8 +30,7 @@ public class Mutation {
     }
 
     public void apply() {
-        updateProperties();
-        if (isActive && !applied&&Main.upgradePts>=price) {
+        if (isActive && !applied && Main.upgradePts>=price) {
             applied = true;
             Main.upgradePts-=price;
         }
@@ -93,6 +92,7 @@ public class Mutation {
         }
     }
     public void show(Graphics2D g2d) {
+        updateProperties();
         g2d.setColor(Color.lightGray);
         if (isActive) g2d.setColor(Color.gray);
         if (applied) g2d.setColor(Color.black);

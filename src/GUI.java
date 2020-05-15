@@ -67,7 +67,7 @@ public class GUI extends JPanel {
         mutationsPanel.setVisible(false);
 
         upgradesPanel.setVisible(false);
-        upgradesPanel.setSize(WIDTH, 600);
+        upgradesPanel.setSize(WIDTH, 700);
         upgradesPanel.addMouseListener(new MouseAdapter() {
            @Override
            public void mouseClicked(MouseEvent e) {
@@ -75,6 +75,7 @@ public class GUI extends JPanel {
                    for (Mutation m : Main.upgrades.values().stream().flatMap(Collection::stream).collect(Collectors.toList())) {
                        if (m.contains(e.getX(), e.getY())) {
                            m.apply();
+                           break;
                        }
                    }
                }

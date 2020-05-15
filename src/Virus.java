@@ -27,7 +27,7 @@ public class Virus {
          transportationChances = new double[]{0.5,0.5,0.5};
 
         //initial infection
-         Main.countries.get((int) (Math.random()*Main.countries.size())).infected = 100;
+         Main.countries.get((int) (Math.random()*Main.countries.size())).infected = 50;
 
 
     }
@@ -125,7 +125,9 @@ public class Virus {
             @Override
             public void apply(){
                 super.apply();
-                Main.v.medicineEffect+=0.001;
+                if (!applied) {
+                    Main.v.medicineEffect += 0.001;
+                }
             }
         };
 
@@ -133,7 +135,9 @@ public class Virus {
             @Override
             public void apply(){
                 super.apply();
-                Main.v.medicineEffect+=0.001;
+                if (!applied) {
+                    Main.v.medicineEffect += 0.001;
+                }
             }
         };
 
@@ -141,7 +145,9 @@ public class Virus {
             @Override
             public void apply() {
                 super.apply();
-                Main.v.popupChance += 0.001;
+                if (!applied) {
+                    Main.v.popupChance += 0.001;
+                }
             }
         };
         Mutation investigationBegin = new Mutation("Start investigating the virus in labs", 2,21, true,medicineImprovement2);
@@ -150,70 +156,96 @@ public class Virus {
             @Override
             public void apply() {
                 super.apply();
-                Country.BonusPopup.maxValue += 1;
+                if (!applied) {
+                    Country.BonusPopup.maxValue += 1;
+                }
             }
         };
         Mutation reduceTransportRate = new Mutation("Discourage travelling",3,29, true, investigationBegin,increaseMaxPopupValue){
             @Override
             public void apply() {
                 super.apply();
-                Main.v.transportationChances[0] -= 0.03;
-                Main.v.transportationChances[1] -= 0.03;
-                Main.v.transportationChances[2] -= 0.02;
+                if (!applied) {
+                    Main.v.transportationChances[0] -= 0.03;
+                    Main.v.transportationChances[1] -= 0.03;
+                    Main.v.transportationChances[2] -= 0.02;
+                }
             }
         };
         Mutation increaseMaxPopupValue2 = new Mutation("Increase amount of OmegaCoins in bonuses", 3, 31, true, investigationBegin,increaseMaxPopupValue){
             @Override
             public void apply() {
                 super.apply();
-                Country.BonusPopup.maxValue += 2;
+                if (!applied) {
+                    Country.BonusPopup.maxValue += 2;
+                }
             }
         };
         Mutation reduceAirTransport = new Mutation("Reduces plane traffic", 4, 35, true, reduceTransportRate){
             @Override
             public void apply() {
                 super.apply();
-                Main.v.transportationChances[1] -= 0.05;
+                if (!applied) {
+                    Main.v.transportationChances[1] -= 0.05;
+                }
             }
         };
         Mutation reduceWaterTransport = new Mutation("Reduces water traffic", 4, 40, true, reduceTransportRate){
             @Override
             public void apply() {
                 super.apply();
-                Main.v.transportationChances[2] -= 0.06;
+                if (!applied) {
+                    Main.v.transportationChances[2] -= 0.06;
+                }
             }
         };
         Mutation encourageInnerQuarantine = new Mutation("Encourage self-quarantine", 4, 29, true,reduceTransportRate){
             @Override
             public void apply() {
                 super.apply();
-                Main.v.innerInfectabilityRate-=0.001;
+                if (!applied) {
+                    Main.v.innerInfectabilityRate -= 0.001;
+                }
             }
         };
 
-        Mutation enableCuring = new Mutation("Start curing the infected", 5, 200, true, encourageInnerQuarantine){
+        Mutation enableCuring = new Mutation("Start curing the infected", 5, 190, true, encourageInnerQuarantine){
             @Override
             public void apply() {
                 super.apply();
-                Main.v.medicineEffect += 0.045;
+                if (!applied) {
+                    Main.v.medicineEffect += 0.04;
+                }
             }
         };
-        Mutation totalQuarantine = new Mutation("Establish quarantine", 5, 230, true,reduceAirTransport, encourageInnerQuarantine){
+        Mutation totalQuarantine = new Mutation("Establish quarantine", 5, 175, true,reduceAirTransport, encourageInnerQuarantine){
             @Override
             public void apply() {
                 super.apply();
-                Main.v.innerInfectabilityRate = 0.001;
-                Main.v.transportationChances = new double[]{0.05,0.05,0.05};
+                if (!applied) {
+                    Main.v.innerInfectabilityRate = 0.001;
+                    Main.v.transportationChances = new double[]{0.04, 0.04, 0.04};
+                }
             }
         };
         Mutation enableAutoPickup = new Mutation("Automatically picks up Bonuses", 5, 130, true, reduceWaterTransport, encourageInnerQuarantine){
             @Override
             public void apply() {
-                super.apply();
-                Main.v.isAutoPickupEnabled = true;
+                if (!applied) {
+                    super.apply();
+                    Main.v.isAutoPickupEnabled = true;
+                }
             }
         };
-
+        Mutation enableCuring2 = new Mutation("Advanced curing the infected", 6, 230, true, enableCuring){
+            @Override
+            public void apply() {
+                super.apply();
+                if (!applied) {
+                    Main.v.medicineEffect += 0.0375;
+                }
+            }
+        };
         mutations = (HashMap<Integer, List<Mutation>>) Stream.of(
                 hotClimateInfectabilityIncreased,
                 mediocreClimateInfectabilityIncreased,
@@ -241,7 +273,8 @@ public class Virus {
                 increaseMaxPopupValue2,
                 totalQuarantine,
                 enableCuring,
-                enableAutoPickup)
+                enableAutoPickup,
+                enableCuring2)
                 .collect(Collectors.groupingBy((Mutation m)->m.level));
     }
 
