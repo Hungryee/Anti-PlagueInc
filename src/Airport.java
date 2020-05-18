@@ -56,15 +56,15 @@ public class Airport extends TransportNode {
         public void show(Graphics2D g2d) {
             if (time>delay){
                 time = 0;
-                from.findCountry().infect(to.findCountry(),(int) ((150+Math.random()*250)),1);
+                from.findCountry().infect(to.findCountry(),(int) ((20+Math.random()*50)),1);
                 ownFlights.remove(this);
             }
-            g2d.setColor(Color.green);
-            g2d.setStroke(new BasicStroke((delay-time)/2));
+            g2d.setColor(new Color(255,200,0,150));
+            g2d.setStroke(new BasicStroke(1));
             g2d.drawLine(from.x,from.y, (int) (from.x+time*dx/delay), (int) (from.y+time*dy/delay));
             AffineTransform tr = g2d.getTransform();
             tr.translate(from.x+time*dx/delay, from.y+time*dy/delay);
-            tr.rotate(Math.PI/2+Math.atan2(to.y-from.y, to.x-from.x));
+            tr.rotate(Math.atan2(to.y-from.y, to.x-from.x));
             tr.translate(-20 / 2d, -20 / 2d);
             g2d.drawImage(img, tr, null);
             tr.translate(-from.x+time*dx/delay + 20 / 2d, -from.y+time*dy/delay + 20 / 2d);

@@ -66,6 +66,21 @@ public class MainMenu extends JPanel {
         start.addActionListener(e -> {
             MainFrame.menu.setVisible(false);
             MainFrame.m.setVisible(true);
+
+            //MainFrame.m.setBounds(0,0,MainFrame.WIDTH, MainFrame.HEIGHT);
+            new Thread(()->{
+                int x = -MainFrame.WIDTH;
+                while (x!=0){
+                    MainFrame.m.setBounds(x,0,MainFrame.WIDTH, MainFrame.HEIGHT);
+                    x+=10;
+                    try {
+                        Thread.sleep(1);
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }).start();
+
             MainFrame.gameState = 1;
             Main.username = (usernameField.getText().length()>0?usernameField.getText():"Guest");
         });
@@ -126,7 +141,8 @@ public class MainMenu extends JPanel {
     public static void writeScoresToFile() throws IOException {
         BufferedWriter bw = new BufferedWriter(new FileWriter(new File("src/scores.txt")));
         int score = (int) (100 - 100 * (1d*Main.maxInfectedOverTime)/Main.countries.stream().mapToInt(c -> c.population).sum()
-        +Main.upgradePts/2);
+        +Main.upgradePts/2
+        -GUI.deadMenu.getPercentComplete()*100);
         MainMenu.scoresList.add(Main.username+"-"+ score);
         MainMenu.sortScores();
         String result = "";

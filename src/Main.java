@@ -14,21 +14,26 @@ import java.util.stream.Collectors;
 public class Main extends JPanel implements MouseListener {
 
     public static ArrayList<Country> countries = new ArrayList<>();
-    public static int totalInfected = 0;
     public static Virus v;
     public static HashMap<Integer, List<Mutation>> upgrades;
     public static BufferedImage mapImage;
     public boolean doneInit;
-    public static int upgradePts = 0;
+    public static int upgradePts = 1000;
     public static GraphPanel graph;
     public static String username = "Guest";
     public static int maxInfectedOverTime = 0;
+    public static int totalPop = 0;
+    public static int totalInfected = 0;
+    public static int totalDead = 0;
+    public static int graphFillDelay = 0;
+    public static long speed = 1;
     public Main() {
         this.setSize(MainFrame.WIDTH, MainFrame.HEIGHT);
         mapImage = new BufferedImage(MainFrame.WIDTH, MainFrame.HEIGHT, BufferedImage.TYPE_INT_ARGB);
         upgrades = new HashMap<>();
         initMap();
         initCountries();
+        totalPop = countries.stream().mapToInt(c -> c.population).sum();
         v = new Virus();
         setPreferredSize(new Dimension(MainFrame.WIDTH, MainFrame.HEIGHT));
         setLayout(new BorderLayout());
@@ -36,56 +41,76 @@ public class Main extends JPanel implements MouseListener {
         graph = new GraphPanel();
         add(new GUI(), BorderLayout.SOUTH);
         add(graph, BorderLayout.EAST);
-        doneInit = true;
 
         Thread paintThread = new Thread(() -> {
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             while (!Thread.currentThread().isInterrupted()) {
-                this.repaint();
-                GUI.infectedMenu.setText("Total infected in world: " + totalInfected);
-                int totalPop = countries.stream().mapToInt(c -> c.population).sum();
-                GUI.infectedMenuPercent.setText("" + totalInfected / (totalPop + 1f) * 100 + "%");
-                int totalDead = countries.stream().mapToInt(c -> c.dead).sum();
-                totalInfected = countries.stream().mapToInt(c -> c.infected).sum();
-                Main.graph.infectedGraphPts.add(totalInfected);
-                Main.graph.deadGraphPts.add(totalDead);
-                GUI.deadMenu.setText("Total dead in world: " + totalDead);
-                GUI.deadMenuPercent.setText("Mortality: " + 1f * totalDead / (totalDead + totalInfected) * 100 + "%");
-                maxInfectedOverTime = graph.infectedGraphPts.stream().max((e1,e2)-> e1-e2).get();
-                GUI.upgradePoints.setText("Ω" + upgradePts);
-                try {
-                    Thread.sleep(42);
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                if (MainFrame.gameState==1) {
-                    if (totalInfected == 0) {
-                        try {
-                           MainMenu.writeScoresToFile();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    v.lifeTime++;
-                    if (v.lifeTime >= v.mutationDelay) {
-                        for (int i : v.mutations.keySet()) {
-                            for (Mutation m : v.mutations.get(i)) {
-                                m.updateProperties();
+                if (isVisible()){
+                    try {
+                        if (speed!=0) {
+                            Thread.sleep(42 / speed);
+                        }else{
+                            while (speed==0) {
+                                Thread.sleep(500);
                             }
                         }
-                        Object[] s = v.mutations.values().stream().flatMap(Collection::stream).filter((Mutation m) -> m.isActive && !m.applied).toArray();
-                        if (s.length > 0) {
-                            Mutation tmp = (Mutation) s[(int) (Math.random() * s.length)];
-                            tmp.apply();
-                            //JOptionPane.showMessageDialog(GUI.mutationsPanel, tmp.desc, "NEW MUTATION", JOptionPane.INFORMATION_MESSAGE);
 
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    this.repaint();
+                    totalDead = countries.stream().mapToInt(c -> c.dead).sum();
+                    totalInfected = countries.stream().mapToInt(c -> c.infected).sum();
+                    GUI.infectedMenu.setValue(totalInfected-totalDead);
+                    GUI.infectedMenu.setString("Total infected: "+String.format("%.2f", GUI.infectedMenu.getPercentComplete()*100)+"%");
+
+                    GUI.deadMenu.setValue(Main.totalDead);
+                    GUI.deadMenu.setString("Total dead: "+String.format("%.2f", GUI.deadMenu.getPercentComplete()*100)+"%");
+                    graphFillDelay++;
+                    if (graphFillDelay>=50) {
+                        Main.graph.infectedGraphPts.add((int) (GUI.infectedMenu.getPercentComplete() * 10000));
+                        Main.graph.deadGraphPts.add((int) (GUI.deadMenu.getPercentComplete() * 10000));
+                        graphFillDelay = 0;
+                    }
+                    if (totalInfected>=maxInfectedOverTime){
+                        maxInfectedOverTime = totalInfected;
+                    }
+                    GUI.upgradePoints.setText("Ω" + upgradePts);
+
+                    if (MainFrame.gameState==1) {
+                        if (totalInfected == 0) {
+                            try {
+                               MainMenu.writeScoresToFile();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
-                        v.lifeTime = 0;
+                        v.lifeTime++;
+                        if (v.lifeTime >= v.mutationDelay) {
+                            for (int i : v.mutations.keySet()) {
+                                for (Mutation m : v.mutations.get(i)) {
+                                    m.updateProperties();
+                                }
+                            }
+                            Object[] s = v.mutations.values().stream().flatMap(Collection::stream).filter((Mutation m) -> m.isActive && !m.applied).toArray();
+                            if (s.length > 0) {
+                                Mutation tmp = (Mutation) s[(int) (Math.random() * s.length)];
+                                tmp.apply();
+                                //JOptionPane.showMessageDialog(GUI.mutationsPanel, tmp.desc, "NEW MUTATION", JOptionPane.INFORMATION_MESSAGE);
+
+                            }
+                            v.lifeTime = 0;
+                        }
                     }
                 }
             }
         });
         paintThread.start();
+        doneInit = true;
     }
 
     public void initMap(){
@@ -283,12 +308,38 @@ public class Main extends JPanel implements MouseListener {
     }
     @Override
     public void paintComponent(Graphics g){
-        Graphics2D g2d = (Graphics2D) g;
-        g2d.drawImage(mapImage, 0,0,null);
-        if (doneInit&&MainFrame.gameState==1) {
-            for (Country c : countries) {
-                c.update();
-                c.show(g2d);
+        if (isVisible()){
+            Graphics2D g2d = (Graphics2D) g;
+            g2d.drawImage(mapImage, 0, 0, null);
+            if (doneInit && MainFrame.gameState == 1) {
+                for (Country c : countries) {
+                    c.update();
+                    c.show(g2d);
+                }
+            }
+            if (GUI.areSeaWaysEnabled || GUI.areAirWaysEnabled) {
+                g2d.setColor(Color.pink);
+                g2d.setStroke(new BasicStroke(1));
+                for (Country c : countries.stream().filter((c) -> c.transportNodes.size() > 0).collect(Collectors.toList())) {
+                    if (GUI.areSeaWaysEnabled) {
+                        for (Port p : c.transportNodes.stream().filter((t) -> t instanceof Port).map((o) -> (Port) o).collect(Collectors.toCollection(ArrayList::new))) {
+                            for (Port other : p.paths.keySet()) {
+                                for (int[] arr : p.paths.get(other)) {
+                                    g2d.fillRect(arr[0], arr[1], 1, 1);
+                                }
+                            }
+                        }
+                    }
+                    if (GUI.areAirWaysEnabled) {
+                        for (Airport airport : c.transportNodes.stream().filter((t) -> t instanceof Airport).map((o) -> (Airport) o).collect(Collectors.toCollection(ArrayList::new))) {
+                            for (Country otherC : countries.stream().filter((otherC) -> otherC.transportNodes.size() > 0).collect(Collectors.toList())) {
+                                for (Airport otherAir : otherC.transportNodes.stream().filter((t) -> t instanceof Airport).map((o) -> (Airport) o).collect(Collectors.toCollection(ArrayList::new))) {
+                                    g2d.drawLine(airport.x, airport.y, otherAir.x, otherAir.y);
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -306,9 +357,9 @@ public class Main extends JPanel implements MouseListener {
             Country:
             for (Country c : countries) {
                 for (Country.BonusPopup p : c.bonuses) {
-                    if (p.polygon.contains(e.getX(), e.getY())) {
-                        c.bonuses.remove(p);
+                    if (p.contains(e.getX(), e.getY())) {
                         p.activate();
+                        c.bonuses.remove(p);
                         break Country;
                     }
                 }

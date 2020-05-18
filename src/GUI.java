@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.plaf.basic.BasicBorders.ButtonBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -14,11 +15,12 @@ public class GUI extends JPanel {
     public static JPanel mutationsPanel;
     public static boolean isClimateShowEnabled = false;
     public static boolean areCountryGradesEnabled = false;
-    public static JMenu infectedMenu = new JMenu(""+Main.totalInfected);
-    public static JMenuItem infectedMenuPercent = new JMenuItem(""+Main.totalInfected);
-    public static JMenu deadMenu = new JMenu("");
-    public static JMenuItem deadMenuPercent = new JMenuItem("");
+    public static boolean areSeaWaysEnabled = false;
+    public static boolean areAirWaysEnabled = false;
+    public static JProgressBar infectedMenu = new JProgressBar();
+    public static JProgressBar deadMenu = new JProgressBar();
     public static JLabel upgradePoints = new JLabel("");
+    public static JMenu displayOptions = new JMenu("Click for more options...");
     public GUI(){
         upgradesPanel = new JPanel(){
             @Override
@@ -63,7 +65,9 @@ public class GUI extends JPanel {
         };
 
         setLayout(new BorderLayout());
+
         add(new BottomBar());
+
         mutationsPanel.setVisible(false);
 
         upgradesPanel.setVisible(false);
@@ -94,14 +98,16 @@ class BottomBar extends JMenuBar{
     BottomBar(){
         setLayout(new FlowLayout());
         add(GUI.upgradePoints);
-        GUI.infectedMenu.add(GUI.infectedMenuPercent);
-        GUI.infectedMenu.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        GUI.deadMenu.add(GUI.deadMenuPercent);
-        GUI.deadMenu.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        GUI.infectedMenu.setMinimum(0);
+        GUI.infectedMenu.setMaximum(Main.totalPop);
+        GUI.infectedMenu.setStringPainted(true);
+
+        GUI.deadMenu.setMinimum(0);
+        GUI.deadMenu.setMaximum(Main.totalPop);
+        GUI.deadMenu.setStringPainted(true);
         add(GUI.infectedMenu);
         add(GUI.deadMenu);
-
-        add(new JButton("Show Climate"){{
+        GUI.displayOptions.add(new JButton("Show Climate"){{
             addActionListener(e -> {
                 GUI.isClimateShowEnabled =!GUI.isClimateShowEnabled;
                 if (GUI.isClimateShowEnabled){
@@ -136,7 +142,7 @@ class BottomBar extends JMenuBar{
 
             });
         }});
-        add(new JButton("Show countries' grades"){{
+        GUI.displayOptions.add(new JButton("Show countries' grades"){{
             addActionListener(e->{
                 GUI.areCountryGradesEnabled=!GUI.areCountryGradesEnabled;
                 if (GUI.areCountryGradesEnabled){
@@ -156,6 +162,17 @@ class BottomBar extends JMenuBar{
                 }
             });
         }});
+        GUI.displayOptions.add(new JButton("Show air traffic"){{
+            addActionListener(e->{
+                GUI.areAirWaysEnabled = !GUI.areAirWaysEnabled;
+            });
+        }});
+        GUI.displayOptions.add(new JButton("Show sea traffic"){{
+            addActionListener(e->{
+                GUI.areSeaWaysEnabled = !GUI.areSeaWaysEnabled;
+            });
+        }});
+        add(GUI.displayOptions);
 
         add(new JButton("Show upgrades"){{
             addActionListener(e->{
@@ -176,6 +193,26 @@ class BottomBar extends JMenuBar{
                 GUI.upgradesPanel.setVisible(false);
                 GUI.mutationsPanel.setVisible(false);
                 Main.graph.setVisible(!Main.graph.isVisible());
+            });
+        }});
+        add(new JButton("||"){{
+            addActionListener(e->{
+                Main.speed = (long) 0;
+            });
+        }});
+        add(new JButton(">"){{
+            addActionListener(e->{
+                Main.speed = (long) 1;
+            });
+        }});
+        add(new JButton(">>"){{
+            addActionListener(e->{
+                Main.speed = (long) 2;
+            });
+        }});
+        add(new JButton(">>>"){{
+            addActionListener(e->{
+                Main.speed = (long) 5;
             });
         }});
     }

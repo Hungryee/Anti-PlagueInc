@@ -1,6 +1,10 @@
 
 
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
@@ -86,9 +90,9 @@ public class Country {
                 Main.v.transportWayInfectability[way]));
         int safeAmount = Math.min(Math.min(amount, c.population-c.infected), infected);
         c.infected += safeAmount;
-        if (c!=this) {
-            infected -= safeAmount/2;
-        }
+//        if (c!=this) {
+//            infected -= safeAmount/2;
+//        }
         c.repaint();
     }
     public void update(){
@@ -98,18 +102,20 @@ public class Country {
             while (tmp==this){
                 tmp = Main.countries.get(new Random().nextInt(Main.countries.size()));
             }
-            transferInfection(tmp, 300 + new Random().nextInt(450));
+            transferInfection(tmp, 50 + new Random().nextInt(50));
 
-            double factor = new Random().nextDouble()*(6d-countryGrade)/2d;
+            double factor = new Random().nextDouble()*((6d-countryGrade)/3d);
             infected += Main.v.innerInfectabilityRate * infected;
+
+            if (Math.random()<0.5) {
+                infected -= infected*(3-factor) * Main.v.medicineEffect;
+            }
 
             dead+=factor*Main.v.mortality * infected;
             infected -= factor*Main.v.mortality*infected;
 
 
-            if (Math.random()<0.5) {
-                infected -= infected*(4-factor) * Main.v.medicineEffect;
-            }
+
 
 
             infected = Math.max(0, Math.min(infected,population));
@@ -125,7 +131,7 @@ public class Country {
                     bonuses.add(new BonusPopup(coords[0], coords[1]));
                 }
             }
-            if (bonuses.size()>0&&Math.random()<0.01){
+            if (bonuses.size()>0&&Math.random()<0.02){
                 bonuses.remove(0);
             }
             lifetime = 0;
@@ -154,22 +160,34 @@ public class Country {
         int size = 20;
         int value;
         public static int maxValue = 4;
-        Polygon polygon = new Polygon();
+        Rectangle2D shape;
+        Image img;
+
+        {
+            try {
+                img = ImageIO.read(new File("src/bonus.png"));
+                img = img.getScaledInstance(30,30,Image.SCALE_SMOOTH);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         public BonusPopup(int x, int y){
             this.x = x;
             this.y = y;
             value = 1+new Random().nextInt(maxValue);
-            polygon.addPoint(x,y);
-            polygon.addPoint(x+size*3/4,y-size);
-            polygon.addPoint(x,y-size*2);
-            polygon.addPoint(x-size*3/4,y-size);
+            shape = new Rectangle(x-img.getWidth(MainFrame.m)/2,y-img.getHeight(MainFrame.m)/2,img.getWidth(MainFrame.m),img.getHeight(MainFrame.m));
         }
         public void show(Graphics2D g2d){
-            g2d.setColor(Color.CYAN);
-            g2d.fill(polygon);
+//            g2d.setColor(Color.CYAN);
+//            g2d.fill(polygon);
+            g2d.drawImage(img,x-img.getWidth(MainFrame.m)/2,y-img.getHeight(MainFrame.m)/2,null);
         }
         public void activate(){
             Main.upgradePts+=value;
+        }
+        public boolean contains(int x, int y){
+            return shape.contains(x,y);
         }
     }
 }

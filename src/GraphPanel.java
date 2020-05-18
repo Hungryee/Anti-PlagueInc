@@ -12,49 +12,41 @@ public class GraphPanel extends JPanel {
     }
     @Override
     public Dimension getPreferredSize() {
-        return new Dimension(500,500);
+        return new Dimension(MainFrame.WIDTH/2,MainFrame.HEIGHT);
     }
 
     @Override
     protected void paintComponent(Graphics g) {
-        if (infectedGraphPts.size()>=2000){
+        if (infectedGraphPts.size()>=getWidth()/4){
             infectedGraphPts.remove(0);
+            deadGraphPts.remove(0);
         }
         if (isVisible()) {
             super.paintComponent(g);
             Graphics2D g2d = (Graphics2D) g;
-            g2d.setColor(Color.black);
-            g2d.setStroke(new BasicStroke(2));
-            for (int i1 = infectedGraphPts.size() - 1; i1 >= 1; i1--) {
-                int value = infectedGraphPts.get(i1);
-                int prevX = (int) ((i1-1)/scaleX);
-                int prevY = (int) (getHeight() - 10 - (infectedGraphPts.get(i1-1))/scaleY);
-                int x = (int) (i1/scaleX);
-                int y = (int) (getHeight() - 10 - value/scaleY);
-                if (x>=getWidth()){
-                    scaleX*=1.5;
-                }
-                if (y<=0){
-                    scaleY *= 1.5;
-                }
-                g2d.fillOval(x-1, y-1, 2, 2);
-                g2d.drawLine(prevX,prevY,x,y);
-            }
             g2d.setColor(Color.red);
-            for (int i1 = deadGraphPts.size() - 1; i1 >= 1; i1--) {
-                int value = deadGraphPts.get(i1);
-                int prevX = (int) ((i1-1)/scaleX);
-                int prevY = (int) (getHeight() - 10 - (deadGraphPts.get(i1-1))/scaleY);
-                int x = (int) (i1/scaleX);
-                int y = (int) (getHeight() - 10 - value/scaleY);
-                if (x>=getWidth()){
-                    scaleX*=1.5;
+            g2d.setStroke(new BasicStroke(1));
+            for (int i1 = infectedGraphPts.size() - 1; i1 >= 1; i1--) {
+                int valueDead = deadGraphPts.get(i1);
+                int valueInfected = infectedGraphPts.get(i1)-valueDead;
+
+                double infected = (valueInfected)/10000d;
+                double dead = (valueDead)/10000d;
+                double healthy = (1-infected-dead);
+                double[] proportins = new double[]{
+                    healthy,infected,dead
+                };
+                Color[] colors = new Color[]{
+                        new Color(0,200,0),
+                        new Color(255,10,0),
+                        Color.darkGray
+                };
+                int prevY = 0;
+                for (int i = 0; i < proportins.length; i++) {
+                    g2d.setColor(colors[i]);
+                    g2d.fillRect(i1*4, prevY,4, (int) (proportins[i]*getHeight()));
+                    prevY += (int) (proportins[i]*getHeight());
                 }
-                if (y<=0){
-                    scaleY *= 1.5;
-                }
-                g2d.fillOval(x-1, y-1, 2, 2);
-                g2d.drawLine(prevX,prevY,x,y);
             }
         }
     }

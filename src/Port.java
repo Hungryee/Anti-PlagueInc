@@ -48,7 +48,6 @@ public class Port extends TransportNode{
                 break;
             }
 
-
             queue.remove(0);
             int j = current[0];
             int i = current[1];
@@ -121,6 +120,8 @@ public class Port extends TransportNode{
             if (from.paths.containsKey(to)) {
                 path = from.paths.get(to);
                 delay = path.size();
+            }else{
+                delay = 500;
             }
 
             speed = 1+new Random().nextInt(5);
@@ -128,20 +129,22 @@ public class Port extends TransportNode{
         public void show(Graphics2D g2d) {
             if (time>=delay){
                 time = 0;
-                from.findCountry().infect(to.findCountry(),(int) ((100+Math.random()*100)),2);
+                from.findCountry().infect(to.findCountry(),(int) ((50+Math.random()*50)),2);
                 ownVoyages.remove(this);
             }
             if (path.size()>0) {
                 for (int i = path.size() - 1; i >= time; i-=3) {
-                    g2d.setColor(new Color(255,255,0,80));
-                    g2d.fillRect(path.get(i)[0]-1, path.get(i)[1]-1, 2, 2);
+                    g2d.setColor(new Color(255,255,0,120));
+                    g2d.fillRect(path.get(i)[0], path.get(i)[1], 1, 1);
                 }
                 AffineTransform tr = g2d.getTransform();
                 tr.translate(path.get(time)[0], path.get(time)[1]);
+                double angle = 0;
                 if (time+1<path.size()) {
-                    tr.rotate(3*Math.PI/2+Math.atan2(path.get(time+1)[1]-path.get(time)[1],path.get(time+1)[0]-path.get(time)[0]));
+                    angle = Math.PI/2+Math.atan2(path.get(time+1)[1]-path.get(time)[1],path.get(time+1)[0]-path.get(time)[0]);
+                    tr.rotate(angle);
                 }
-                tr.translate(-3, -13);
+                tr.translate(-3,-13);
                 g2d.drawImage(img, tr, null);
                 tr.translate(-path.get(time)[0] + 3, -path.get(time)[1] + 13);
             }
